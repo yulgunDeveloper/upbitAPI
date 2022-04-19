@@ -1,0 +1,38 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.6'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'war'
+}
+
+group = 'com.upbit'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.apache.httpcomponents:httpclient:4.5'
+    implementation 'io.jsonwebtoken:jjwt:0.9.1'
+    implementation 'com.auth0:java-jwt:3.16.0'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'\
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
