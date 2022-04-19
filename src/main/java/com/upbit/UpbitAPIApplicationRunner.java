@@ -1,19 +1,36 @@
 package com.upbit;
 
+import com.upbit.auth.JwtService;
+import com.upbit.config.UpbitConfigureProp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+import java.util.Properties;
+
 /**
- * 시리얼 통신에서 메세지를 송수신 하기 위한 어플리케이션을 실행하는 부분임
+ * Upbit 데이터를 송수신하기 위한 어플리케이션
  */
 @Slf4j
 @Component
 public class UpbitAPIApplicationRunner implements ApplicationRunner {
+    /**
+     * property들을 가져오는 객체
+     */
+    final private UpbitConfigureProp upbitConfigureProp;
+
+    /**
+     * 생성자
+     * @param upbitConfigureProp DB에 연결할 property들을 가져오는 객체
+     */
+    public UpbitAPIApplicationRunner(UpbitConfigureProp upbitConfigureProp) {
+        this.upbitConfigureProp = upbitConfigureProp;
+    }
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
         log.info("run yulgunDev's upbitAutoApllication................");
+        JwtService jwtService = new JwtService(upbitConfigureProp);
     }
 }
