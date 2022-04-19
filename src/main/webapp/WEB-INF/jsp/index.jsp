@@ -5,16 +5,15 @@
   Time: 오후 2:35
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page import="java.util.Map" %>
 <%@ page import="org.springframework.boot.configurationprocessor.json.JSONArray" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
   <head>
     <title>내 계좌</title>
-    <script>
-      alert("accessKey와 secretKey를 확인해 주세요.");
-    </script>
+    <%@ include file="header.jsp" %>
   </head>
-  <body>
+<body>
+  <%@ include file="menu.jsp" %>
   </body>
 </html>

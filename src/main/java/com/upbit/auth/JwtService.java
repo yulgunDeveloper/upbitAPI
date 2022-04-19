@@ -18,7 +18,7 @@ public class JwtService {
      */
     public JwtService(UpbitConfigureProp upbitConfigureProp) {
         this.upbitConfigureProp = upbitConfigureProp;
-        prop = upbitConfigureProp.setProperties("application.properties");
+        prop = upbitConfigureProp.setProperties("config.properties");
     }
 
     public static String getAccessKey(){

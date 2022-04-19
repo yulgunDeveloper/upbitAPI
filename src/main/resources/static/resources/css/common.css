@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300&family=Righteous&display=swap');
+
+.titleAc {
+    font-family: 'Jua', sans-serif;
+    font-size: 25px;
+    padding-left: 2rem;
+    padding-top: 2rem;
+}
+
+/*.menu {*/
+/*    padding-left: 4rem;*/
+/*}*/
+
+h1 {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 20px;
+    padding-left: 2rem;
+}
+
+.myAccount {
+    font-family: 'Jua', sans-serif;
+    font-size: 30px;
+    padding-left: 2rem;
+    padding-top: 0.7rem;
+}
+
+h2 {
+    font-family: 'Jua', sans-serif;
+    font-size: 20px;
+    padding-left: 2rem;
+    padding-top: 2rem;
+}

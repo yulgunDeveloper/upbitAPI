@@ -2,7 +2,6 @@ package com.upbit.auth;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.upbit.config.UpbitConfigureProp;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Properties;
 import java.util.UUID;
 
 @Slf4j
@@ -27,6 +25,11 @@ public class GetAccountsController {
     static JwtService jwtService;
 
     @RequestMapping(value = "/")
+    public static String home() {
+        return "index";
+    }
+
+    @RequestMapping(value = "/myAccounts.do")
     public static String getAccounts(Model model) {
         String accessKey = jwtService.getAccessKey();
         String secretKey = jwtService.getSecretKey();
@@ -52,8 +55,8 @@ public class GetAccountsController {
             model.addAttribute("result", jsonArray);
         } catch (Exception e) {
             e.printStackTrace();
-            return "error.jsp";
+            return "error";
         }
-        return "login.jsp";
+        return "myAccount";
     }
 }
