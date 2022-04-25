@@ -15,5 +15,9 @@
   </head>
 <body>
   <%@ include file="menu.jsp" %>
-  </body>
+  <%
+    JSONArray jsonArray = (JSONArray) request.getAttribute("list");
+    out.print(jsonArray);
+  %>
+</body>
 </html>

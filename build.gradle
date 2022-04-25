@@ -27,6 +27,7 @@ dependencies {
     implementation 'com.auth0:java-jwt:3.16.0'
     implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
     implementation 'javax.servlet:jstl:1.2'
+    implementation 'com.squareup.okhttp3:okhttp:3.2.0'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
