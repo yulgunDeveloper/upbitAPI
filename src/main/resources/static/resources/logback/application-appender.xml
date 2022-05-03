@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<appender name="APPLICATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${APPLICATION_LOG_FILE_NAME}.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <fileNamePattern>${LOG_PATH}/${APPLICATION_LOG_FILE_NAME}-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+        <maxHistory>365</maxHistory>
+        <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+            <maxFileSize>100MB</maxFileSize>
+        </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+    <encoder>
+        <charset>${LOG_CHARSET}</charset>
+        <pattern>${FILE_LOG_PATTERN}</pattern>
+    </encoder>
+</appender>

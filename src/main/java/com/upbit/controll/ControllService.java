@@ -2,9 +2,11 @@ package com.upbit.controll;
 
 import com.upbit.account.AccountService;
 import com.upbit.config.UpbitConfigureProp;
+import com.upbit.market.MarketDto;
 import com.upbit.market.MarketSerivce;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
 import java.util.Properties;
 
 @Slf4j
@@ -12,9 +14,7 @@ public class ControllService implements ControllServiceInterface {
 
     private final UpbitConfigureProp upbitConfigureProp;
     private static Properties prop;
-
-    private static MarketSerivce marketSerivce = new MarketSerivce();
-    private static AccountService accountService = new AccountService();
+    private static List<MarketDto> marketList; //market list
 
     /**
      * upbit 연결 정보를 받아오는 생성자
@@ -41,8 +41,8 @@ public class ControllService implements ControllServiceInterface {
         log.debug("accessKey, secretKey 확인 중...");
         do {
             try {
-                if (accountService.getAccounts(accessKey, secretKey) <= 0) {
-                    Thread.sleep(2000);
+                if (AccountService.getAccounts(accessKey, secretKey) <= 0) {
+                    Thread.sleep(5000);
                     log.warn("accessKey, secretKey 없음. 다시 확인해 주세요...");
                     log.warn("프로그램을 종료 후 재시작해 주세요...");
                     return -1;
@@ -59,7 +59,14 @@ public class ControllService implements ControllServiceInterface {
     public void start() {
         log.info("자동 매매 프로그램 실행...");
         try {
-            marketSerivce.marketList();
+            log.info("리스트 받아오는 중...");
+            marketList = MarketSerivce.marketList();
+            log.info("{}", marketList);
+//            do {
+//                marketList = MarketSerivce.marketList();
+//                log.info("실행중...");
+//                Thread.sleep(2000);
+//            } while (true);
         } catch (Exception e) {
             log.warn("MarketList error : {}", e.getMessage());
             e.printStackTrace();
