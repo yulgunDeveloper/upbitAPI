@@ -21,6 +21,14 @@
         </encoder>
     </appender>
 
+    <property name ="LOG_PATTERN" value = "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} %-2relative - [ %thread{10} ] %logger{35}.%method[%line] - %msg%n"/>
+
+    <appender name ="CONSOLE" class ="ch.qos.logback.core.ConsoleAppender">
+        <encoder class ="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
     <springProfile name="local">
         <root level="${LOG_LEVEL}">
             <appender-ref ref="CONSOLE"/>
