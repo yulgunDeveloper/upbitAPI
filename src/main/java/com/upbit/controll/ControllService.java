@@ -16,6 +16,8 @@ public class ControllService implements ControllServiceInterface {
     private static Properties prop;
     private static List<MarketDto> marketList; //market list
 
+    MarketSerivce marketSerivce = new MarketSerivce();
+
     /**
      * upbit 연결 정보를 받아오는 생성자
      *
@@ -60,8 +62,9 @@ public class ControllService implements ControllServiceInterface {
         log.info("자동 매매 프로그램 실행...");
         try {
             log.info("리스트 받아오는 중...");
-            marketList = MarketSerivce.marketList();
-            log.info("{}", marketList);
+            marketList = marketSerivce.marketList();
+            marketSerivce.checkRSI(marketList);
+            log.info("대기 중...");
 //            do {
 //                marketList = MarketSerivce.marketList();
 //                log.info("실행중...");

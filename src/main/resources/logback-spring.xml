@@ -14,17 +14,11 @@
     <springProperty scope="context" name="SLACK_CHANNEL" source="logging.slack.channel" defaultValue="infra-dev"/>
     <springProperty scope="context" name="SLACK_ICON_EMOJI" source="logging.slack.icon-emoji"/>
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <charset>${LOG_CHARSET}</charset>
-            <pattern>%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} %-2relative - [ %thread{10} ] %logger{35}.%method[%line] - %msg%n</pattern>
-        </encoder>
-    </appender>
-
     <property name ="LOG_PATTERN" value = "%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} %-2relative - [ %thread{10} ] %logger{35}.%method[%line] - %msg%n"/>
 
     <appender name ="CONSOLE" class ="ch.qos.logback.core.ConsoleAppender">
         <encoder class ="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <charset>${LOG_CHARSET}</charset>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
@@ -32,28 +26,6 @@
     <springProfile name="local">
         <root level="${LOG_LEVEL}">
             <appender-ref ref="CONSOLE"/>
-        </root>
-    </springProfile>
-
-    <springProfile name="dev">
-        <include resource="logback/application-appender.xml"/>
-        <include resource="logback/error-appender.xml"/>
-        <root level="${LOG_LEVEL}">
-            <appender-ref ref="CONSOLE"/>
-            <!--            <appender-ref ref="SLACK_ASYNC"/>-->
-            <appender-ref ref="APPLICATION"/>
-            <appender-ref ref="ERROR"/>
-        </root>
-    </springProfile>
-
-    <springProfile name="dev">
-        <include resource="logback/application-appender.xml"/>
-        <include resource="logback/error-appender.xml"/>
-        <root level="${LOG_LEVEL}">
-            <appender-ref ref="CONSOLE"/>
-            <!--            <appender-ref ref="SLACK_ASYNC"/>-->
-            <appender-ref ref="APPLICATION"/>
-            <appender-ref ref="ERROR"/>
         </root>
     </springProfile>
 

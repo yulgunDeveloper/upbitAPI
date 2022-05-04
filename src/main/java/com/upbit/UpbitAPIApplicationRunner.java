@@ -2,6 +2,7 @@ package com.upbit;
 
 import com.upbit.controll.ControllService;
 import com.upbit.config.UpbitConfigureProp;
+import com.upbit.market.MarketSerivce;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -29,8 +30,8 @@ public class UpbitAPIApplicationRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         log.info("run yulgunDev's upbitAutoApllication................");
-        ControllService jwtService = new ControllService(upbitConfigureProp);
-        if ( jwtService.init() < 0) return;
-        jwtService.start();
+        ControllService controllService = new ControllService(upbitConfigureProp);
+        if ( controllService.init() < 0) return;
+        controllService.start();
     }
 }
