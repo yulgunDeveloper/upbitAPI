@@ -56,10 +56,16 @@ public class MarketSerivce {
             MarketDto marketDto = tradeDayList(marketDtoList.get(i));
             sumU += marketDto.getU();
             sumD += marketDto.getD();
-            log.info("getKorean_name : {}", marketDto.getKorean_name());
-            log.info("getChange_price : {}", marketDto.getChange_price());
-            log.info("getChange_rate : {}", marketDto.getChange_rate());
+            // 생각해보니깐.. tradeDayList에서 JsonArray로 받아와야지.. 14일치로 그리고 거기서 계산해야지퓨ㅠㅠ
+            log.trace("getKorean_name : {}", marketDto.getKorean_name());
+            log.trace("getChange_price : {}", marketDto.getChange_price());
+            log.trace("getChange_rate : {}", marketDto.getChange_rate());
         }
+        sumU /= marketDtoList.size();
+        sumD *= -1;
+        sumD /= marketDtoList.size();
+        log.info("sumU : {}", sumU);
+        log.info("sumD : {}", sumD);
     }
 
     // 1일 단위 종가 리스트
