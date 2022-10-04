@@ -63,8 +63,17 @@ public class ControllService implements ControllServiceInterface {
         try {
             log.info("리스트 받아오는 중...");
             marketList = marketSerivce.marketList();
-            marketSerivce.checkRSI(marketList);
+//            marketSerivce.checkRSI(marketList);
             log.info("대기 중...");
+            marketList = marketSerivce.fastenStrength(marketList);
+            log.info("{}", marketList);
+
+            // market 리스트 확인하기
+//            for (int i = 0; i < marketList.size(); i++) {
+//                log.info("Market : {}", marketList.get(i));
+//            }
+
+
 //            do {
 //                marketList = MarketSerivce.marketList();
 //                log.info("실행중...");

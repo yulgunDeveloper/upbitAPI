@@ -24,7 +24,24 @@
     <tr>
         <td>
             <div><h1>보유 KRW</h1></div>
-            <div><h3 class="myAccount"><fmt:formatNumber value="${ accountList.get(0).balance }" pattern="#,###.###"/> 원</h3></div>
+            <div>
+                <h3 class="myAccount">
+                    <fmt:formatNumber value="${ accountList.get(0).balance }" pattern="#,###.###"/> 원
+                </h3>
+            </div>
+        </td>
+        <td>
+            <div><h1>주문 중 묶여있는 금액/수량</h1></div>
+            <div>
+                <h3 class="myAccount">
+                    <c:if test="${ empty accountList.get(0).locked}">
+                        0 원
+                    </c:if>
+                    <c:if test="${ !empty accountList.get(0).locked}">
+                        <fmt:formatNumber value="${ accountList.get(0).locked }" pattern="#,###.###"/> 원
+                    </c:if>
+                </h3>
+            </div>
         </td>
         <td>
             <div><h1>총 보유자산</h1></div>

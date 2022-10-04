@@ -1,6 +1,7 @@
 package com.upbit.market;
 
 import lombok.Data;
+import org.springframework.boot.configurationprocessor.json.JSONArray;
 
 @Data
 public class MarketDto {
@@ -55,11 +56,11 @@ public class MarketDto {
      */
     Double trade_price;
 
-//    /**
-//     * 해당 캔들에서 마지막 틱이 저장된 시각
-//     */
-//    Long timestamp;
-//
+    /**
+     * 해당 캔들에서 마지막 틱이 저장된 시각
+     */
+    Long timestamp;
+
 //    /**
 //     * 누적 거래 금액
 //     */
@@ -104,4 +105,39 @@ public class MarketDto {
      * D : 양수를 0으로
      */
     Double D = 0.0;
+
+    /**
+     * 호가 매도 총 잔량
+     */
+    Double total_ask_size = 0.0;
+
+    /**
+     * 호가 매수수 총 량
+     */
+    Double total_bid_size = 0.0;
+
+    /**
+     * 호가
+     */
+    JSONArray orderbook_units = new JSONArray();
+//
+//    /**
+//     * 매도호가
+//     */
+//    Double ask_price = 0.0;
+//
+//    /**
+//     * 매수호가
+//     */
+//    Double bid_price = 0.0;
+//
+//    /**
+//     * 매도 잔량
+//     */
+//    Double ask_size = 0.0;
+//
+//    /**
+//     * 매수 잔량
+//     */
+//    Double bid_size = 0.0;
 }

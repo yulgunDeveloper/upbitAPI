@@ -1,17 +1,34 @@
 package com.upbit.market;
 
+import com.upbit.account.AccountDto;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.http.util.EntityUtils;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 public class MarketSerivce {
+
+    public static List<MarketDto> jsonArrayToList(JSONArray jsonArray) throws JSONException {
+        List<MarketDto> fastenStrengthList = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject ob = (JSONObject) jsonArray.get(i);
+            MarketDto dto = new MarketDto();
+            dto.setMarket(ob.getString("market"));
+            dto.setTimestamp(ob.getLong("timestamp"));
+            dto.setOrderbook_units(ob.getJSONArray("orderbook_units"));
+            fastenStrengthList.add(dto);
+        }
+        return fastenStrengthList;
+    }
 
     public static List<MarketDto>  marketList() throws Exception {
         OkHttpClient client = new OkHttpClient();
@@ -116,5 +133,25 @@ public class MarketSerivce {
         marketDto.setU(U);
         marketDto.setD(D);
         return marketDto;
+    }
+
+    // 체결 강도 계산
+    public static List<MarketDto> fastenStrength(List<MarketDto> marketList) throws Exception {
+        List<MarketDto> fastenStrengthList = new ArrayList<>();
+        for (int i = 0; i < marketList.size(); i++) {
+            MarketDto marketDto = marketList.get(i);
+            fastenStrengthList = new ArrayList<>();
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url("https://api.upbit.com/v1/orderbook?markets=" + marketDto.getMarket())
+                    .get()
+                    .addHeader("accept", "application/json")
+                    .build();
+            Response response = client.newCall(request).execute();
+            String takeDayList = response.body().string();
+            JSONArray jsonArray = new JSONArray(takeDayList);
+            fastenStrengthList = jsonArrayToList(jsonArray); // 체결 매도, 매수 호가 가져오기
+        }
+        return fastenStrengthList;
     }
 }
