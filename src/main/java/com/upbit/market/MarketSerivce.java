@@ -1,33 +1,54 @@
 package com.upbit.market;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.upbit.account.AccountDto;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.util.*;
 
 @Slf4j
 public class MarketSerivce {
 
-    public static List<MarketDto> jsonArrayToList(JSONArray jsonArray) throws JSONException {
+    public static List<MarketDto> jsonArrayToList(JSONArray jsonArray,MarketDto marketDto) throws JSONException {
         List<MarketDto> fastenStrengthList = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject ob = (JSONObject) jsonArray.get(i);
-            MarketDto dto = new MarketDto();
-            dto.setMarket(ob.getString("market"));
-            dto.setTimestamp(ob.getLong("timestamp"));
-            dto.setOrderbook_units(ob.getJSONArray("orderbook_units"));
-            fastenStrengthList.add(dto);
+            marketDto.setMarket(ob.getString("market"));
+            marketDto.setTimestamp(ob.getLong("trade_date_utc"));
+            marketDto.setTimestamp(ob.getLong("trade_time_utc"));
+            marketDto.setTimestamp(ob.getLong("timestamp"));
+            fastenStrengthList.add(marketDto);
         }
         return fastenStrengthList;
+    }
+
+    public static Double hourOfTradingVol(JSONArray jsonArray) throws JSONException {
+        List<MarketDto> fastenStrengthList = new ArrayList<>();
+        Double volume = 0.0;
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject ob = (JSONObject) jsonArray.get(i);
+//            marketDto.setTimestamp(ob.getLong("trade_date_utc"));
+//            marketDto.setTimestamp(ob.getLong("trade_time_utc"));
+//            marketDto.setTimestamp(ob.getLong("timestamp"));
+            volume += ob.getDouble("acc_trade_volume_24h");
+        }
+        return volume;
     }
 
     public static List<MarketDto>  marketList() throws Exception {
@@ -135,23 +156,99 @@ public class MarketSerivce {
         return marketDto;
     }
 
-    // 체결 강도 계산
-    public static List<MarketDto> fastenStrength(List<MarketDto> marketList) throws Exception {
-        List<MarketDto> fastenStrengthList = new ArrayList<>();
+    // 현재가 정보
+    public static List<MarketDto> nowValueInf(List<MarketDto> marketList) throws Exception {
+        List<MarketDto> volMarketList = new ArrayList<>(); // 24시간 누적 거래량이 5000 넘어가는 종목만 선택
         for (int i = 0; i < marketList.size(); i++) {
             MarketDto marketDto = marketList.get(i);
-            fastenStrengthList = new ArrayList<>();
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
-                    .url("https://api.upbit.com/v1/orderbook?markets=" + marketDto.getMarket())
+                    .url("https://api.upbit.com/v1/ticker?markets=" + marketDto.getMarket())
                     .get()
                     .addHeader("accept", "application/json")
                     .build();
             Response response = client.newCall(request).execute();
-            String takeDayList = response.body().string();
-            JSONArray jsonArray = new JSONArray(takeDayList);
-            fastenStrengthList = jsonArrayToList(jsonArray); // 체결 매도, 매수 호가 가져오기
+            String fastenStr = response.body().string();
+            JSONArray jsonArray = new JSONArray(fastenStr);
+            if (hourOfTradingVol(jsonArray) >= 100000) {
+                volMarketList.add(marketDto);
+            }
+            if (i % 7 == 0) {
+                Thread.sleep(500);
+            }
         }
-        return fastenStrengthList;
+        return volMarketList;
+    }
+
+    // 호가(Orderbook) 응답
+    public static MarketDto oderBook(MarketDto marketDto) throws Exception {
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://api.upbit.com/v1/orderbook?markets=" + marketDto.getMarket())
+                .get()
+                .addHeader("accept", "application/json")
+                .build();
+        Response response = client.newCall(request).execute();
+        String oderBookStr = response.body().string();
+        JSONArray jsonArray = new JSONArray(oderBookStr);
+        return marketDto;// 체결 매도, 매수 호가 가져오기
+    }
+
+    /**
+     * 계산을 위한 매수/매도 수수료 비율
+     */
+    public static List<MarketDto> sellBuyFee(List<MarketDto> marketList, String secKey, String acKey) throws Exception {
+        List<MarketDto> sellBuyFeeList = new ArrayList<>();
+        for (int i = 0; i < marketList.size(); i++) {
+            MarketDto marketDto = marketList.get(i);
+            HashMap<String, String> params = new HashMap<>();
+            params.put("market", marketDto.getMarket());
+
+            ArrayList<String> queryElements = new ArrayList<>();
+            for(Map.Entry<String, String> entity : params.entrySet()) {
+                queryElements.add(entity.getKey() + "=" + entity.getValue());
+            }
+
+            String queryString = String.join("&", queryElements.toArray(new String[0]));
+
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(queryString.getBytes("UTF-8"));
+
+            String queryHash = String.format("%0128x", new BigInteger(1, md.digest()));
+
+            Algorithm algorithm = Algorithm.HMAC256(secKey);
+            String jwtToken = JWT.create()
+                    .withClaim("access_key", acKey)
+                    .withClaim("nonce", UUID.randomUUID().toString())
+                    .withClaim("query_hash", queryHash)
+                    .withClaim("query_hash_alg", "SHA512")
+                    .sign(algorithm);
+
+            String authenticationToken = "Bearer " + jwtToken;
+
+            try {
+                HttpClient client = HttpClientBuilder.create().build();
+                HttpGet request = new HttpGet("https://api.upbit.com/v1/orders/chance?" + queryString);
+                request.setHeader("Content-Type", "application/json");
+                request.addHeader("Authorization", authenticationToken);
+
+                HttpResponse response = client.execute(request);
+                HttpEntity entity = response.getEntity();
+                String result = EntityUtils.toString(entity, "UTF-8");
+                JSONArray jsonArray = new JSONArray(result);
+                JSONObject ob = (JSONObject) jsonArray.get(0);
+                marketDto.setBid_fee(ob.getDouble("bid_fee"));
+                marketDto.setAsk_fee(ob.getDouble("ask_fee"));
+                sellBuyFeeList.add(marketDto);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (i % 5 == 0) {
+                Thread.sleep(500);
+            }
+        }
+
+        return sellBuyFeeList;
     }
 }

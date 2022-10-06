@@ -120,6 +120,31 @@ public class MarketDto {
      * 호가
      */
     JSONArray orderbook_units = new JSONArray();
+
+    /**
+     * 현재 구매/판매 상태
+     */
+    Boolean sellBuy = false; // 기본적으로 내가 산 리스트에 없다고 가정
+
+    /**
+     * 매수 수수료 비율
+     */
+    Double bid_fee = 0.0;
+
+    /**
+     * 매도 수수료 비율
+     */
+    Double ask_fee = 0.0;
+
+    /**
+     * 이전 호가
+     */
+    Double prev_trade = 0.0;
+
+    /**
+     * 현재 호가
+     */
+    Double now_trade = 0.0;
 //
 //    /**
 //     * 매도호가

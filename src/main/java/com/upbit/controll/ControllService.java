@@ -4,6 +4,7 @@ import com.upbit.account.AccountService;
 import com.upbit.config.UpbitConfigureProp;
 import com.upbit.market.MarketDto;
 import com.upbit.market.MarketSerivce;
+import com.upbit.market.execution.ExecutionSerivce;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -17,6 +18,8 @@ public class ControllService implements ControllServiceInterface {
     private static List<MarketDto> marketList; //market list
 
     MarketSerivce marketSerivce = new MarketSerivce();
+    ExecutionSerivce executionSerivce = new ExecutionSerivce();
+    AccountService accountService = new AccountService();
 
     /**
      * upbit 연결 정보를 받아오는 생성자
@@ -43,7 +46,7 @@ public class ControllService implements ControllServiceInterface {
         log.debug("accessKey, secretKey 확인 중...");
         do {
             try {
-                if (AccountService.getAccounts(accessKey, secretKey) <= 0) {
+                if (accountService.getAccounts(accessKey, secretKey) <= 0) {
                     Thread.sleep(5000);
                     log.warn("accessKey, secretKey 없음. 다시 확인해 주세요...");
                     log.warn("프로그램을 종료 후 재시작해 주세요...");
@@ -64,9 +67,10 @@ public class ControllService implements ControllServiceInterface {
             log.info("리스트 받아오는 중...");
             marketList = marketSerivce.marketList();
 //            marketSerivce.checkRSI(marketList);
-            log.info("대기 중...");
-            marketList = marketSerivce.fastenStrength(marketList);
-            log.info("{}", marketList);
+            marketList = marketSerivce.nowValueInf(marketList); // 거래량 많은 목록만 가져오기
+            marketList = marketSerivce.sellBuyFee(marketList, getAccessKey(), getSecretKey()); // 매수 매도 수수료 집어넣기
+            log.info("총 {}개 상대로 매매 시작...", marketList.size());
+//            log.info("{}", executionSerivce.stockExecution(marketList));
 
             // market 리스트 확인하기
 //            for (int i = 0; i < marketList.size(); i++) {
@@ -74,11 +78,13 @@ public class ControllService implements ControllServiceInterface {
 //            }
 
 
-//            do {
-//                marketList = MarketSerivce.marketList();
-//                log.info("실행중...");
-//                Thread.sleep(2000);
-//            } while (true);
+            do {
+                log.info("매매/판매 대기중...");
+                // 맨처음에 이미 내 계좌에 있던것도 빼야함
+                executionSerivce.stockExecution(marketList, getAccessKey(), getSecretKey());
+
+                Thread.sleep(500);
+            } while (true);
         } catch (Exception e) {
             log.warn("MarketList error : {}", e.getMessage());
             e.printStackTrace();
