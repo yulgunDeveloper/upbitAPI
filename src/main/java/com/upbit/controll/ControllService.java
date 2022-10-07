@@ -62,14 +62,14 @@ public class ControllService implements ControllServiceInterface {
     }
 
     public void start() {
-        log.info("자동 매매 프로그램 실행...");
+        log.debug("자동 매매 프로그램 실행...");
         try {
             log.info("리스트 받아오는 중...");
             marketList = marketSerivce.marketList();
 //            marketSerivce.checkRSI(marketList);
             marketList = marketSerivce.nowValueInf(marketList); // 거래량 많은 목록만 가져오기
-            marketList = marketSerivce.sellBuyFee(marketList, getAccessKey(), getSecretKey()); // 매수 매도 수수료 집어넣기
-            log.info("총 {}개 상대로 매매 시작...", marketList.size());
+            marketList = marketSerivce.sellBuyFee(marketList); // 매수 매도 수수료 집어넣기
+//            log.info("총 {}개 상대로 매매 시작...", marketList.size());
 //            log.info("{}", executionSerivce.stockExecution(marketList));
 
             // market 리스트 확인하기
@@ -81,7 +81,8 @@ public class ControllService implements ControllServiceInterface {
             do {
                 log.info("매매/판매 대기중...");
                 // 맨처음에 이미 내 계좌에 있던것도 빼야함
-                executionSerivce.stockExecution(marketList, getAccessKey(), getSecretKey());
+                // 구매할때 조건 더 넣어야함
+                executionSerivce.stockExecution(marketList);
 
                 Thread.sleep(500);
             } while (true);

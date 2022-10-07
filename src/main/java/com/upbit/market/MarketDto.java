@@ -61,6 +61,11 @@ public class MarketDto {
      */
     Long timestamp;
 
+    /**
+     * 해당 캔들에서 마지막 틱이 저장된 시각
+     */
+    Double trade_volume;
+
 //    /**
 //     * 누적 거래 금액
 //     */
@@ -145,6 +150,21 @@ public class MarketDto {
      * 현재 호가
      */
     Double now_trade = 0.0;
+
+    /**
+     * 52주 신고가
+     */
+    Double highest_52_week_price = 0.0;
+
+    /**
+     * 52주 신저가
+     */
+    Double lowest_52_week_price = 0.0;
+
+    /**
+     * 24시간 누적 거래량
+     */
+    Double acc_trade_volume_24h = 0.0;
 //
 //    /**
 //     * 매도호가

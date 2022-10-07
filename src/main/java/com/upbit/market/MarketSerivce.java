@@ -3,6 +3,7 @@ package com.upbit.market;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.upbit.account.AccountDto;
+import com.upbit.controll.ControllService;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -25,6 +26,8 @@ import java.util.*;
 @Slf4j
 public class MarketSerivce {
 
+    static ControllService controllService;
+
     public static List<MarketDto> jsonArrayToList(JSONArray jsonArray,MarketDto marketDto) throws JSONException {
         List<MarketDto> fastenStrengthList = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -38,17 +41,36 @@ public class MarketSerivce {
         return fastenStrengthList;
     }
 
-    public static Double hourOfTradingVol(JSONArray jsonArray) throws JSONException {
+    /**
+     * 24시간 누적 거래량 계산하기
+     */
+    public static MarketDto hourOfTradingVol(JSONArray jsonArray, MarketDto marketDto) throws JSONException {
         List<MarketDto> fastenStrengthList = new ArrayList<>();
+        String volumeStr;
         Double volume = 0.0;
+        Double highP = 0.0;
+        Double lowP = 0.0;
+        Double nowP = 0.0;
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject ob = (JSONObject) jsonArray.get(i);
 //            marketDto.setTimestamp(ob.getLong("trade_date_utc"));
 //            marketDto.setTimestamp(ob.getLong("trade_time_utc"));
 //            marketDto.setTimestamp(ob.getLong("timestamp"));
-            volume += ob.getDouble("acc_trade_volume_24h");
+            volume = ob.getDouble("acc_trade_volume_24h");
+            volumeStr = String.valueOf(volume);
+            volume = Double.valueOf(volumeStr);
+            if (volumeStr.contains("E")) {
+                volume = -1.0;
+            }
+            highP = ob.getDouble("highest_52_week_price"); // 52주 신고가
+            lowP = ob.getDouble("lowest_52_week_price"); // 52주 신저가
+            nowP = ob.getDouble("trade_price"); // 현재가
         }
-        return volume;
+        marketDto.setAcc_trade_volume_24h(volume);
+        marketDto.setHighest_52_week_price(highP); // 52주 신고가
+        marketDto.setLowest_52_week_price(lowP); // 52주 신저가
+        marketDto.setTrade_price(nowP); // 현재가
+        return marketDto;
     }
 
     public static List<MarketDto>  marketList() throws Exception {
@@ -170,8 +192,10 @@ public class MarketSerivce {
             Response response = client.newCall(request).execute();
             String fastenStr = response.body().string();
             JSONArray jsonArray = new JSONArray(fastenStr);
-            if (hourOfTradingVol(jsonArray) >= 100000) {
+            marketDto = hourOfTradingVol(jsonArray, marketDto);
+            if (marketDto.getAcc_trade_volume_24h() >= 10000.0) {
                 volMarketList.add(marketDto);
+//                log.info("{}  24시간 누적거래량:{}  52주 신고가 : {}, 52주 신저가 : {}, 현재가 : {}",marketDto.getMarket(), marketDto.getAcc_trade_volume_24h(), marketDto.getHighest_52_week_price(), marketDto.getLowest_52_week_price(), marketDto.getTrade_price());
             }
             if (i % 7 == 0) {
                 Thread.sleep(500);
@@ -197,7 +221,9 @@ public class MarketSerivce {
     /**
      * 계산을 위한 매수/매도 수수료 비율
      */
-    public static List<MarketDto> sellBuyFee(List<MarketDto> marketList, String secKey, String acKey) throws Exception {
+    public static List<MarketDto> sellBuyFee(List<MarketDto> marketList) throws Exception {
+        String acKey = controllService.getAccessKey();
+        String secKey = controllService.getSecretKey();
         List<MarketDto> sellBuyFeeList = new ArrayList<>();
         for (int i = 0; i < marketList.size(); i++) {
             MarketDto marketDto = marketList.get(i);
@@ -235,12 +261,10 @@ public class MarketSerivce {
                 HttpResponse response = client.execute(request);
                 HttpEntity entity = response.getEntity();
                 String result = EntityUtils.toString(entity, "UTF-8");
-                JSONArray jsonArray = new JSONArray(result);
-                JSONObject ob = (JSONObject) jsonArray.get(0);
-                marketDto.setBid_fee(ob.getDouble("bid_fee"));
-                marketDto.setAsk_fee(ob.getDouble("ask_fee"));
+                JSONObject ob = new JSONObject(result);
+                marketDto.setBid_fee(Double.valueOf(ob.getString("bid_fee")));
+                marketDto.setAsk_fee(Double.valueOf(ob.getString("ask_fee")));
                 sellBuyFeeList.add(marketDto);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }

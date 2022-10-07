@@ -63,14 +63,14 @@ public class ExecutionSerivce {
 
             executionDtoList.add(executionDto);
         }
-        tradeVol = ((buyVolume / buy) / (sellVolume / sell)) * 100;
+        tradeVol = (buyVolume / sellVolume) * 100;
 //        log.info("매도 : {}", sell);
 //        log.info("매수 : {}", buy);
 //        log.info("투자 여부 : {}", tradeVol);
         // 150 이상일 때 사고 50 이하일때 팔아볼까
-        if (tradeVol >= 130) {
+        if (tradeVol >= 200) {
             result = "bid";
-        } else if (tradeVol < 50) {
+        } else if (tradeVol < 100) {
             result = "ask";
         } else {
             result = "none";
@@ -81,8 +81,7 @@ public class ExecutionSerivce {
     /**
      * 체결 강도 계산 및 바로 사기
      */
-    public static void stockExecution(List<MarketDto> marketList, String secKey, String acKey) throws Exception {
-        log.info("매매/판매 대기중...");
+    public static void stockExecution(List<MarketDto> marketList) throws Exception {
         List<MarketDto> executionDtoList = new ArrayList<>();
         for (int i = 0; i < marketList.size(); i++) {
             MarketDto marketDto = marketList.get(i);
@@ -102,14 +101,17 @@ public class ExecutionSerivce {
                     executionDtoList.add(marketDto);
                     marketDto.setPrev_trade(marketDto.getNow_trade());
                     marketDto.setNow_trade(ob.getDouble("trade_price") + ob.getDouble("trade_price") * marketDto.getBid_fee());
-                    log.info("{} 구매, 현재가 : {}", marketDto.getMarket(), ob.getDouble("trade_price"));
+                    log.info("{} 구매, 현재가 : {}", marketDto.getMarket(), marketDto.getNow_trade());
                     marketDto.setSellBuy(true);
                 }
 //                orders(marketDto, secKey, acKey);
             } else if (sellBuyNone.equals("ask")) {
                 if (marketDto.getSellBuy()) {
-                    if (marketDto.getNow_trade() >= marketDto.getPrev_trade() + marketDto.getPrev_trade() * marketDto.getAsk_fee()) {
+                    Double lastVal = marketDto.getNow_trade() + marketDto.getNow_trade() * marketDto.getAsk_fee();
+                    if (ob.getDouble("trade_price") >= lastVal + lastVal * 0.05) {
                         log.info("{} 판매, 현재가 : {}", marketDto.getMarket(), ob.getDouble("trade_price"));
+                        marketDto.setPrev_trade(0.0);
+                        marketDto.setNow_trade(0.0);
                         marketDto.setSellBuy(false);
                     }
                 }
