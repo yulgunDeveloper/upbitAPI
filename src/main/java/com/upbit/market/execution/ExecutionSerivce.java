@@ -43,7 +43,7 @@ public class ExecutionSerivce {
         String result = "none"; // 살지(bid), 팔지(ask), 대기할지(none)
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject ob = (JSONObject) jsonArray.get(i);
-//            executionDto.setMarket(ob.getString("market"));
+            executionDto.setMarket(ob.getString("market"));
 //            executionDto.setTrade_date_utc(ob.getString("trade_date_utc"));
 //            executionDto.setTrade_time_utc(ob.getString("trade_time_utc"));
 //            executionDto.setTimestamp(ob.getLong("timestamp"));
@@ -63,12 +63,13 @@ public class ExecutionSerivce {
 
             executionDtoList.add(executionDto);
         }
-        tradeVol = (buyVolume / sellVolume) * 100;
+//        tradeVol = (buyVolume/ sellVolume) * 100;
 //        log.info("매도 : {}", sell);
 //        log.info("매수 : {}", buy);
-//        log.info("투자 여부 : {}", tradeVol);
         // 150 이상일 때 사고 50 이하일때 팔아볼까
-        if (tradeVol >= 200) {
+//        log.info("1 : {}", tradeVol);
+        tradeVol = ((buyVolume / buy) / (sellVolume / sell)) * 100;
+        if (tradeVol >= 250) { // 250, 220 모두 10분 이상 안사던데
             result = "bid";
         } else if (tradeVol < 100) {
             result = "ask";
@@ -81,7 +82,8 @@ public class ExecutionSerivce {
     /**
      * 체결 강도 계산 및 바로 사기
      */
-    public static void stockExecution(List<MarketDto> marketList) throws Exception {
+    public static Double stockExecution(List<MarketDto> marketList, Double myMoney) throws Exception {
+        Double prevMyMoney = 0.0;
         List<MarketDto> executionDtoList = new ArrayList<>();
         for (int i = 0; i < marketList.size(); i++) {
             MarketDto marketDto = marketList.get(i);
@@ -97,19 +99,26 @@ public class ExecutionSerivce {
             JSONObject ob = (JSONObject) jsonArray.get(0);
             String sellBuyNone = investmentCal(jsonArray);
             if (sellBuyNone.equals("bid")) {
-                if (!marketDto.getSellBuy()) {
-                    executionDtoList.add(marketDto);
-                    marketDto.setPrev_trade(marketDto.getNow_trade());
-                    marketDto.setNow_trade(ob.getDouble("trade_price") + ob.getDouble("trade_price") * marketDto.getBid_fee());
-                    log.info("{} 구매, 현재가 : {}", marketDto.getMarket(), marketDto.getNow_trade());
-                    marketDto.setSellBuy(true);
+                if (!marketDto.getSellBuy() && myMoney >= 1000.0) {
+                        marketDto.setPrev_trade(marketDto.getNow_trade());
+                        marketDto.setNow_trade(ob.getDouble("trade_price") + ob.getDouble("trade_price") * marketDto.getBid_fee());
+                        prevMyMoney = myMoney;
+                        myMoney = calMyMoneyBuy(marketDto.getNow_trade(), myMoney, marketDto);
+                    if (marketDto.getBuyCount() != 0) {
+                        executionDtoList.add(marketDto);
+                        log.info("{} 구매 {} 개, 현재가 : {}, 잔돈 : {}", marketDto.getMarket(), marketDto.getBuyCount(), marketDto.getNow_trade(), myMoney);
+                        marketDto.setSellBuy(true);
+                    } else {
+                        myMoney = prevMyMoney;
+                    }
                 }
 //                orders(marketDto, secKey, acKey);
             } else if (sellBuyNone.equals("ask")) {
                 if (marketDto.getSellBuy()) {
                     Double lastVal = marketDto.getNow_trade() + marketDto.getNow_trade() * marketDto.getAsk_fee();
-                    if (ob.getDouble("trade_price") >= lastVal + lastVal * 0.05) {
+                    if (ob.getDouble("trade_price") >= lastVal + lastVal * 0.05 || ob.getDouble("trade_price") <= lastVal - lastVal * 0.05) {
                         log.info("{} 판매, 현재가 : {}", marketDto.getMarket(), ob.getDouble("trade_price"));
+                        myMoney = calMyMoneySell(ob.getDouble("trade_price"), myMoney, marketDto);
                         marketDto.setPrev_trade(0.0);
                         marketDto.setNow_trade(0.0);
                         marketDto.setSellBuy(false);
@@ -120,6 +129,7 @@ public class ExecutionSerivce {
                 Thread.sleep(500);
             }
         }
+        return myMoney;
     }
 
     /**
@@ -177,5 +187,24 @@ public class ExecutionSerivce {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // 써야할 돈 계산 및 남은 돈 반환(구매시)
+    public static Double calMyMoneyBuy(Double nowPrice, Double myMoney, MarketDto marketDto) {
+        Double money = myMoney / 600;
+        int howMuch = 0;
+        int count = Integer.valueOf((int) (money / nowPrice));
+        if (count >= 1.0) {
+            howMuch = (int) (money * count);
+            myMoney = myMoney - howMuch;
+            marketDto.setBuyCount(count);
+        }
+        return myMoney;
+    }
+    // 써야할 돈 계산 및 남은 돈 반환(구매시)
+    public static Double calMyMoneySell(Double sellPrice, Double myMoney, MarketDto marketDto) {
+        myMoney = myMoney + sellPrice * marketDto.getBuyCount();
+        marketDto.setBuyCount(0);
+        return myMoney;
     }
 }

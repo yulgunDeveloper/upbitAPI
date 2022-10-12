@@ -19,6 +19,7 @@ import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.*;
@@ -45,33 +46,56 @@ public class MarketSerivce {
      * 24시간 누적 거래량 계산하기
      */
     public static MarketDto hourOfTradingVol(JSONArray jsonArray, MarketDto marketDto) throws JSONException {
-        List<MarketDto> fastenStrengthList = new ArrayList<>();
-        String volumeStr;
         Double volume = 0.0;
         Double highP = 0.0;
         Double lowP = 0.0;
         Double nowP = 0.0;
+        String volumestr = "";
+        String highPstr = "";
+        String lowPstr = "";
+        String nowPstr = "";
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject ob = (JSONObject) jsonArray.get(i);
 //            marketDto.setTimestamp(ob.getLong("trade_date_utc"));
 //            marketDto.setTimestamp(ob.getLong("trade_time_utc"));
 //            marketDto.setTimestamp(ob.getLong("timestamp"));
             volume = ob.getDouble("acc_trade_volume_24h");
-            volumeStr = String.valueOf(volume);
-            volume = Double.valueOf(volumeStr);
-            if (volumeStr.contains("E")) {
-                volume = -1.0;
-            }
             highP = ob.getDouble("highest_52_week_price"); // 52주 신고가
             lowP = ob.getDouble("lowest_52_week_price"); // 52주 신저가
             nowP = ob.getDouble("trade_price"); // 현재가
+//            volume = doubleMinusE(volume);
+//            highP = doubleMinusE(highP);
+//            lowP = doubleMinusE(lowP);
+//            nowP = doubleMinusE(nowP);
+//            volumestr = doubleMinusEstr(volume);
+//            highPstr = doubleMinusEstr(highP);
+//            lowPstr = doubleMinusEstr(lowP);
+//            nowPstr = doubleMinusEstr(nowP);
         }
-        marketDto.setAcc_trade_volume_24h(volume);
+        marketDto.setAcc_trade_volume_24h(volume); // 24시간 누적 거래량(09시 기준)
         marketDto.setHighest_52_week_price(highP); // 52주 신고가
         marketDto.setLowest_52_week_price(lowP); // 52주 신저가
         marketDto.setTrade_price(nowP); // 현재가
+//        log.info("{}  24시간 누적거래량:{}  52주 신고가 : {}, 52주 신저가 : {}, 현재가 : {}",marketDto.getMarket(), volumestr, highPstr, lowPstr, nowPstr);
         return marketDto;
     }
+
+//    public static Double doubleMinusE(Double doubleNum) {
+//        String doubleStr = String.valueOf(doubleNum);
+//        BigDecimal bigDecimal = new BigDecimal(doubleNum);
+//        if (doubleStr.contains("E")) {
+//            doubleStr = bigDecimal.toString();
+//        }
+//        return doubleStr;
+//    }
+//    public static String doubleMinusEstr(Double doubleNum) {
+//        String doubleStr = String.valueOf(doubleNum);
+//        BigDecimal bigDecimal = new BigDecimal(doubleNum);
+//        if (doubleStr.contains("E")) {
+//            doubleStr = bigDecimal.toString();
+//        }
+//        return doubleStr;
+//    }
 
     public static List<MarketDto>  marketList() throws Exception {
         OkHttpClient client = new OkHttpClient();
@@ -193,9 +217,9 @@ public class MarketSerivce {
             String fastenStr = response.body().string();
             JSONArray jsonArray = new JSONArray(fastenStr);
             marketDto = hourOfTradingVol(jsonArray, marketDto);
-            if (marketDto.getAcc_trade_volume_24h() >= 10000.0) {
+            if (marketDto.getAcc_trade_volume_24h() >= 10000.0 && marketDto.getHighest_52_week_price() >= 1000) {
                 volMarketList.add(marketDto);
-//                log.info("{}  24시간 누적거래량:{}  52주 신고가 : {}, 52주 신저가 : {}, 현재가 : {}",marketDto.getMarket(), marketDto.getAcc_trade_volume_24h(), marketDto.getHighest_52_week_price(), marketDto.getLowest_52_week_price(), marketDto.getTrade_price());
+                log.trace("{}  24시간 누적거래량:{}  52주 신고가 : {}, 52주 신저가 : {}, 현재가 : {}",marketDto.getMarket(), marketDto.getAcc_trade_volume_24h(), marketDto.getHighest_52_week_price(), marketDto.getLowest_52_week_price(), marketDto.getTrade_price());
             }
             if (i % 7 == 0) {
                 Thread.sleep(500);

@@ -165,6 +165,11 @@ public class MarketDto {
      * 24시간 누적 거래량
      */
     Double acc_trade_volume_24h = 0.0;
+
+    /**
+     * count
+     */
+    int buyCount = 0;
 //
 //    /**
 //     * 매도호가
