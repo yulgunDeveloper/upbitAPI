@@ -169,7 +169,7 @@ public class MarketDto {
     /**
      * count
      */
-    int buyCount = 0;
+    Double buyCount = 0.0;
 //
 //    /**
 //     * 매도호가

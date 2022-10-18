@@ -69,7 +69,7 @@ public class ExecutionSerivce {
         // 150 이상일 때 사고 50 이하일때 팔아볼까
 //        log.info("1 : {}", tradeVol);
         tradeVol = ((buyVolume / buy) / (sellVolume / sell)) * 100;
-        if (tradeVol >= 250) { // 250, 220 모두 10분 이상 안사던데
+        if (tradeVol >= 300) { // 250, 220 모두 10분 이상 안사던데
             result = "bid";
         } else if (tradeVol < 100) {
             result = "ask";
@@ -99,17 +99,23 @@ public class ExecutionSerivce {
             JSONObject ob = (JSONObject) jsonArray.get(0);
             String sellBuyNone = investmentCal(jsonArray);
             if (sellBuyNone.equals("bid")) {
-                if (!marketDto.getSellBuy() && myMoney >= 1000.0) {
-                        marketDto.setPrev_trade(marketDto.getNow_trade());
+                if (marketDto.getPrev_trade() == 0.0) {
+                    marketDto.setPrev_trade(ob.getDouble("trade_price") + ob.getDouble("trade_price") * marketDto.getBid_fee());
+                } else {
+                    if (!marketDto.getSellBuy() && myMoney >= 1000.0 
+                            && marketDto.getPrev_trade() > ob.getDouble("trade_price") + ob.getDouble("trade_price") * marketDto.getBid_fee()) { // 처음 돈 보다 적어졌을때
                         marketDto.setNow_trade(ob.getDouble("trade_price") + ob.getDouble("trade_price") * marketDto.getBid_fee());
+                        marketDto.setPrev_trade(marketDto.getNow_trade());
                         prevMyMoney = myMoney;
                         myMoney = calMyMoneyBuy(marketDto.getNow_trade(), myMoney, marketDto);
-                    if (marketDto.getBuyCount() != 0) {
-                        executionDtoList.add(marketDto);
-                        log.info("{} 구매 {} 개, 현재가 : {}, 잔돈 : {}", marketDto.getMarket(), marketDto.getBuyCount(), marketDto.getNow_trade(), myMoney);
-                        marketDto.setSellBuy(true);
-                    } else {
-                        myMoney = prevMyMoney;
+                        if (marketDto.getBuyCount() != 0.0) {
+                            executionDtoList.add(marketDto);
+                            log.info("{} 구매 {} 개, 현재가 : {}, 잔돈 : {}", marketDto.getMarket(), marketDto.getBuyCount(), marketDto.getNow_trade(), myMoney);
+                            marketDto.setSellBuy(true);
+                        } else {
+                            myMoney = prevMyMoney;
+                            marketDto.setNow_trade(marketDto.getPrev_trade());
+                        }
                     }
                 }
 //                orders(marketDto, secKey, acKey);
@@ -117,10 +123,11 @@ public class ExecutionSerivce {
                 if (marketDto.getSellBuy()) {
                     Double lastVal = marketDto.getNow_trade() + marketDto.getNow_trade() * marketDto.getAsk_fee();
                     if (ob.getDouble("trade_price") >= lastVal + lastVal * 0.05 || ob.getDouble("trade_price") <= lastVal - lastVal * 0.05) {
-                        log.info("{} 판매, 현재가 : {}", marketDto.getMarket(), ob.getDouble("trade_price"));
+                        log.info("{} 판매, 이익(원) : {}", marketDto.getMarket(), (lastVal - marketDto.getNow_trade()) * marketDto.getBuyCount());
                         myMoney = calMyMoneySell(ob.getDouble("trade_price"), myMoney, marketDto);
-                        marketDto.setPrev_trade(0.0);
+                        marketDto.setBuyCount(0.0);
                         marketDto.setNow_trade(0.0);
+                        marketDto.setPrev_trade(lastVal);
                         marketDto.setSellBuy(false);
                     }
                 }
@@ -191,20 +198,21 @@ public class ExecutionSerivce {
 
     // 써야할 돈 계산 및 남은 돈 반환(구매시)
     public static Double calMyMoneyBuy(Double nowPrice, Double myMoney, MarketDto marketDto) {
-        Double money = myMoney / 600;
-        int howMuch = 0;
-        int count = Integer.valueOf((int) (money / nowPrice));
-        if (count >= 1.0) {
-            howMuch = (int) (money * count);
-            myMoney = myMoney - howMuch;
-            marketDto.setBuyCount(count);
+        Double money = 50000.0;
+        double howMuch = 0;
+        double count = Math.round((money / nowPrice) * 1000000000) / 1000000000.0;
+        if (count != 0.0) {
+            howMuch = nowPrice * count;
+            if (howMuch <= myMoney) {
+                myMoney = myMoney - howMuch;
+                marketDto.setBuyCount(count);
+            }
         }
         return myMoney;
     }
-    // 써야할 돈 계산 및 남은 돈 반환(구매시)
+    // 써야할 돈 계산 및 남은 돈 반환(판매시)
     public static Double calMyMoneySell(Double sellPrice, Double myMoney, MarketDto marketDto) {
         myMoney = myMoney + sellPrice * marketDto.getBuyCount();
-        marketDto.setBuyCount(0);
         return myMoney;
     }
 }

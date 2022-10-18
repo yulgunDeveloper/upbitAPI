@@ -7,7 +7,7 @@ plugins {
 
 group = 'com.upbit'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '11'
+sourceCompatibility = '15'
 
 configurations {
     compileOnly {
@@ -38,4 +38,13 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+bootWar {
+    enabled = true
+    destinationDirectory = file(System.getenv("UPBIT_PROJECT")+"/libs")
+}
+war {
+    enabled = true
+    destinationDirectory = file(System.getenv("UPBIT_PROJECT")+"/libs")
 }
