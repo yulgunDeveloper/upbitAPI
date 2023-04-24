@@ -1,2 +1,1 @@
-rootProject.name = 'upbitAPI'
-include 'upbit-master'
+rootProject.name = 'upbit-api'
