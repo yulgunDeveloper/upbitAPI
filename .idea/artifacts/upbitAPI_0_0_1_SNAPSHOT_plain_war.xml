@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" build-on-make="true" name="upbitAPI-0.0.1-SNAPSHOT-plain.war">
-    <output-path>$USER_HOME$/Desktop</output-path>
-    <root id="archive" name="Gradle _ com.upbit _ upbitAPI-0.0.1-SNAPSHOT-plain.war (exploded) archive.war">
-      <element id="artifact" artifact-name="Gradle : com.upbit : upbitAPI-0.0.1-SNAPSHOT-plain.war (exploded)" />
-    </root>
-  </artifact>
-</component>
