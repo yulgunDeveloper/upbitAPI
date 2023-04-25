@@ -144,6 +144,7 @@ public class MarketSerivce {
             log.trace("getKorean_name : {}", marketDto.getKorean_name());
             log.trace("getChange_price : {}", marketDto.getChange_price());
             log.trace("getChange_rate : {}", marketDto.getChange_rate());
+            System.out.println("test");
         }
         sumU /= marketDtoList.size();
         sumD *= -1;
