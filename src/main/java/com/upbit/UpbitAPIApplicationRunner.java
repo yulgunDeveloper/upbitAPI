@@ -32,6 +32,6 @@ public class UpbitAPIApplicationRunner implements ApplicationRunner {
         log.info("run yulgunDev's upbitAutoApllication................");
         ControllService controllService = new ControllService(upbitConfigureProp);
         if ( controllService.init() < 0) return;
-        controllService.start();
+        controllService.startWithOnlyTwo();
     }
 }

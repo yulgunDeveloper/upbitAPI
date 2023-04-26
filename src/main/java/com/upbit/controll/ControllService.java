@@ -75,7 +75,31 @@ public class ControllService implements ControllServiceInterface {
             marketList = marketSerivce.nowValueInf(marketList); // 거래량 많은 목록만 가져오기
             marketList = marketSerivce.sellBuyFee(marketList); // 매수 매도 수수료 집어넣기
             log.debug("총 {}개 상대로 매매 시작...", marketList.size());
-//            log.info("{}", executionSerivce.stockExecution(marketList));
+
+            do {
+                log.info("매매/판매 대기중...");
+                // 맨처음에 이미 내 계좌에 있던것 marketDto.setSellBuy(true); 랑 buycount Set 해놓기
+                // 구매할때 조건 더 넣어야함
+                myMoney = executionSerivce.stockExecution(marketList, myMoney);
+
+                Thread.sleep(500);
+            } while (true);
+        } catch (Exception e) {
+            log.warn("MarketList error : {}", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /** 
+     * 비트코인과 이더리움만 가지고 실행
+     * */
+    public void startWithOnlyTwo() {
+        log.debug("자동 매매 프로그램 실행...");
+        try {
+            log.info("리스트 받아오는 중...");
+            marketList = marketSerivce.marketListOnlyTwo();
+            marketList = marketSerivce.sellBuyFee(marketList); // 매수 매도 수수료 집어넣기
+            log.debug("총 {}개 상대로 매매 시작...", marketList.size());
 
             do {
                 log.info("매매/판매 대기중...");

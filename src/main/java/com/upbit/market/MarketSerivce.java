@@ -132,6 +132,30 @@ public class MarketSerivce {
         return marketDtoList;
     }
 
+    public static List<MarketDto>  marketListOnlyTwo() throws Exception {
+        List<MarketDto> marketDtoList = new ArrayList<>();
+
+        // 비트코인과 이더리움만 리스트에 추가
+        MarketDto marketDto = new MarketDto();
+        marketDto.setMarket("KRW-BTC");
+        marketDto.setMarket_warning(("NONE"));
+        marketDto.setKorean_name("비트코인");
+        marketDto.setEnglish_name("Bitcoin");
+        marketDtoList.add(marketDto);
+
+        marketDto = new MarketDto();
+        marketDto.setMarket("KRW-ETH");
+        marketDto.setMarket_warning(("NONE"));
+        marketDto.setKorean_name("이더리움");
+        marketDto.setEnglish_name("Ethereum");
+        marketDtoList.add(marketDto);
+
+
+        log.trace("market 리스트 : {}", marketDtoList);
+        log.trace("market 리스트 : {}", marketDtoList.size());
+        return marketDtoList;
+    }
+
 // https://primestory.tistory.com/8
     public static void checkRSI(List<MarketDto> marketDtoList) throws Exception {
         Double sumU = 0.0;
