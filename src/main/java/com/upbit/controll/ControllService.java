@@ -45,20 +45,20 @@ public class ControllService implements ControllServiceInterface {
         String accessKey = getAccessKey();
         String secretKey = getSecretKey();
         log.debug("accessKey, secretKey 확인 중...");
-        do {
-            try {
-                if (accountService.getAccounts(accessKey, secretKey) <= 0) {
-                    Thread.sleep(5000);
-                    log.warn("accessKey, secretKey 없음. 다시 확인해 주세요...");
-                    log.warn("프로그램을 종료 후 재시작해 주세요...");
-                    return -1;
-                }
-                break;
-            } catch (Exception e) {
-                log.warn("accessKey, secretKey error : {}", e.getMessage());
-                e.printStackTrace();
+        try {
+            if (accountService.getAccounts(accessKey, secretKey) <= 0) {
+                Thread.sleep(5000);
+                log.warn("accessKey, secretKey 없음. 다시 확인해 주세요...");
+                log.warn("올바른 키 입력 후 프로그램을 재시작해 주세요...");
+                // 예외 처리 코드
+                System.exit(1); // 프로그램 종료
             }
-        } while (true);
+        } catch (Exception e) {
+            log.warn("accessKey, secretKey error : {}", e.getMessage());
+            e.printStackTrace();
+            // 예외 처리 코드
+            System.exit(1); // 프로그램 종료
+        }
         return 1;
     }
 
