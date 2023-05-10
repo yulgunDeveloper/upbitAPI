@@ -100,7 +100,6 @@ public class ControllService implements ControllServiceInterface {
             marketList = marketSerivce.marketListOnlyTwo();
             marketList = marketSerivce.sellBuyFee(marketList); // 매수 매도 수수료 집어넣기
             log.debug("총 {}개 상대로 매매 시작...", marketList.size());
-
             do {
                 log.info("매매/판매 대기중...");
                 // 맨처음에 이미 내 계좌에 있던것 marketDto.setSellBuy(true); 랑 buycount Set 해놓기
